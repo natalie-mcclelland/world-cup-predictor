@@ -187,12 +187,21 @@
         recalculateLeaderboard();
     });
 
-    function switchTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
+function switchTab(tabId, btn) {
+    // Check if user is trying to access Admin
+    if (tabId === 'admin_stage') {
+        const password = prompt("Enter Admin Password:");
+        if (password !== "+HlprudlpH!s?aprlcob7DiT01brL2r7cIcre7ac_ub#Sw1Qap") { // CHANGE THIS PASSWORD
+            alert("Access Denied!");
+            return;
+        }
     }
+
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
 
     function initGroupsUI() {
         const grid = document.getElementById('groups_grid');
