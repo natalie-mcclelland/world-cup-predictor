@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 World Cup Predictor Competition</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { color: var(--accent); margin-bottom: 5px; }
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn {
+            background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border);
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .tab-btn.active, .tab-btn:hover { background: var(--accent); color: var(--bg-color); border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+        .group-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .group-title { font-size: 1.3rem; color: var(--accent); margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
+        th, td { padding: 8px; text-align: center; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; }
+        td.team-name { text-align: left; font-weight: 500; }
+        .match-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+        .match-team { flex: 1; font-size: 0.9rem; }
+        .match-team.home { text-align: right; padding-right: 12px; }
+        .match-team.away { text-align: left; padding-left: 12px; }
+        .match-score { width: 45px; background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); text-align: center; padding: 6px; border-radius: 6px; font-weight: bold; font-size: 1rem; }
+        .vs { color: var(--text-muted); font-size: 0.8rem; margin: 0 8px; }
+        .ko-stage { margin-bottom: 40px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .ko-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
+        .bonus-group { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); max-width: 600px; margin: 0 auto; }
+        .bonus-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .bonus-field label { font-weight: 600; font-size: 0.95rem; color: var(--text-muted); }
+        .bonus-field input, .bonus-field textarea { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; }
+        .btn-primary { background: var(--success); color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-secondary { background: var(--accent); color: var(--bg-color); border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover { opacity: 0.9; }
+        textarea { font-family: monospace; height: 120px; resize: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏆 2026 World Cup Predictor Master</h1>
+        <p style="color: var(--text-muted);">Two-Stage Submission Edition.</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('group_stage', this)">1. Predict Groups</button>
+        <button class="tab-btn" onclick="switchTab('official_standings', this)" style="border-color: rgba(56, 189, 248, 0.4)">📊 Official Group Tables</button>
+        <button class="tab-btn" onclick="switchTab('knockout_stage', this)">2. Predict Knockouts</button>
+        <button class="tab-btn" onclick="switchTab('bonus_stage', this)">3. Bonus & Export</button>
+        <button class="tab-btn" onclick="switchTab('admin_stage', this)" style="border-color: var(--accent)">🛡️ Admin Dashboard</button>
+    </div>
+
+    <div id="group_stage" class="tab-content active">
+        <div class="groups-grid" id="groups_grid"></div>
+    </div>
+
+    <div id="official_standings" class="tab-content">
+        <div class="groups-grid" id="official_standings_grid"></div>
+    </div>
+
+    <div id="knockout_stage" class="tab-content">
+        <div class="ko-stage"><h3>Round of 32</h3><div class="ko-grid" id="r32_container"></div></div>
+        <div class="ko-stage"><h3>Round of 16</h3><div class="ko-grid" id="r16_container"></div></div>
+        <div class="ko-stage"><h3>Quarter-Finals</h3><div class="ko-grid" id="qf_container"></div></div>
+        <div class="ko-stage"><h3>Semi-Finals</h3><div class="ko-grid" id="sf_container"></div></div>
+        <div class="ko-stage"><h3>The Final</h3><div class="ko-grid" id="f_container"></div></div>
+    </div>
+
+    <div id="bonus_stage" class="tab-content">
+        <div class="bonus-group">
+            <h3>Bonus Point Questions (5 pts each)</h3>
+            <div class="bonus-field">
+                <label>Your Name / Alias:</label>
+                <input type="text" id="participant_name" placeholder="Enter your name">
+            </div>
+            <div class="bonus-field">
+                <label>Golden Boot Winner:</label>
+                <input type="text" id="bonus_boot" placeholder="e.g. Kylian Mbappé">
+            </div>
+            <div class="bonus-field">
+                <label>Golden Glove Winner:</label>
+                <input type="text" id="bonus_glove" placeholder="e.g. Emi Martínez">
+            </div>
+            <div class="bonus-field">
+                <label>Player of the Tournament:</label>
+                <input type="text" id="bonus_potr" placeholder="e.g. Jude Bellingham">
+            </div>
+            <div class="bonus-field">
+                <label>Young Player of the Tournament:</label>
+                <input type="text" id="bonus_ypt" placeholder="e.g. Lamine Yamal">
+            </div>
+            <hr style="border-color: var(--border); margin: 25px 0;">
+            <button class="btn-primary" onclick="exportData()">Generate My Code</button>
+            <div class="bonus-field" style="margin-top: 15px;">
+                <label>Copy this snippet and send it to the organizer:</label>
+                <textarea id="export_output" readonly onclick="this.select()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin_stage" class="tab-content">
+        <div class="bonus-group" style="max-width: 800px;">
+            <h3>Organizer Control Panel</h3>
+            <button class="btn-secondary" style="width: 100%; padding: 15px;" onclick="saveOfficialResults()">💾 Save Official Results & Update All</button>
+            <hr style="border-color: var(--border); margin: 25px 0;">
+            <div class="bonus-field">
+                <label>Onboard/Update Participant:</label>
+                <textarea id="admin_input_code" placeholder="Paste participant code snippet here..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="addFriendToSystem()">➕ Register/Update Participant</button>
+            <h3 style="margin-top: 35px;">🏆 Live Leaderboard</h3>
+            <table>
+                <thead><tr><th>Rank</th><th style="text-align:left">Name</th><th>Total Points</th><th>Actions</th></tr></thead>
+                <tbody id="leaderboard_body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const groupsData = {
+        A: ["Mexico", "South Africa", "South Korea", "Czechia"],
+        B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+        C: ["Brazil", "Morocco", "Haiti", "Scotland"],
+        D: ["United States", "Paraguay", "Australia", "Türkiye"],
+        E: ["Germany", "Curaçao", "Côte d'Ivoire", "Ecuador"],
+        F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
+        G: ["Belgium", "Egypt", "Iran", "New Zealand"],
+        H: ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"],
+        I: ["France", "Senegal", "Iraq", "Norway"],
+        J: ["Argentina", "Algeria", "Austria", "Jordan"],
+        K: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+        L: ["England", "Croatia", "Ghana", "Panama"]
+    };
+
+    const groupMatches = [];
+    const koRouting = {
+        'R32_1': { next: 'R16_1', slot: 'home' }, 'R32_2': { next: 'R16_1', slot: 'away' },
+        'R32_3': { next: 'R16_2', slot: 'home' }, 'R32_4': { next: 'R16_2', slot: 'away' },
+        'R32_5': { next: 'R16_3', slot: 'home' }, 'R32_6': { next: 'R16_3', slot: 'away' },
+        'R32_7': { next: 'R16_4', slot: 'home' }, 'R32_8': { next: 'R16_4', slot: 'away' },
+        'R32_9': { next: 'R16_5', slot: 'home' }, 'R32_10': { next: 'R16_5', slot: 'away' },
+        'R32_11': { next: 'R16_6', slot: 'home' }, 'R32_12': { next: 'R16_6', slot: 'away' },
+        'R32_13': { next: 'R16_7', slot: 'home' }, 'R32_14': { next: 'R16_7', slot: 'away' },
+        'R32_15': { landmark: true }, 'R32_16': { landmark: true },
+        'R16_1': { next: 'QF_1', slot: 'home' }, 'R16_2': { next: 'QF_1', slot: 'away' },
+        'R16_3': { next: 'QF_2', slot: 'home' }, 'R16_4': { next: 'QF_2', slot: 'away' },
+        'R16_5': { next: 'QF_3', slot: 'home' }, 'R16_6': { next: 'QF_3', slot: 'away' },
+        'R16_7': { next: 'QF_4', slot: 'home' }, 'R16_8': { next: 'QF_4', slot: 'away' },
+        'QF_1': { next: 'SF_1', slot: 'home' }, 'QF_2': { next: 'SF_1', slot: 'away' },
+        'QF_3': { next: 'SF_2', slot: 'home' }, 'QF_4': { next: 'SF_2', slot: 'away' },
+        'SF_1': { next: 'F_1', slot: 'home' }, 'SF_2': { next: 'F_1', slot: 'away' }
+    };
+
+    let friendsList = JSON.parse(localStorage.getItem('wc_friends_data')) || [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initGroupsUI();
+        initGroupMatches();
+        initKnockoutUI();
+        loadSavedOfficialScores();
+        updateGroupStandings();
+        recalculateLeaderboard();
+    });
+
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function initGroupsUI() {
+        const grid = document.getElementById('groups_grid');
+        const officialGrid = document.getElementById('official_standings_grid');
+        for (const group in groupsData) {
+            grid.insertAdjacentHTML('beforeend', `<div class="group-card"><div class="group-title">Group ${group}</div><table><thead><tr><th style="text-align:left">Team</th><th>P</th><th>GD</th><th>Pts</th></tr></thead><tbody id="table_body_${group}"></tbody></table><div id="matches_${group}"></div></div>`);
+            officialGrid.insertAdjacentHTML('beforeend', `<div class="group-card"><div class="group-title">Group ${group} Official</div><table><thead><tr><th style="text-align:left">Team</th><th>P</th><th>GD</th><th>Pts</th></tr></thead><tbody id="official_table_body_${group}"></tbody></table></div>`);
+        }
+    }
+
+    function initGroupMatches() {
+        for (const [group, teams] of Object.entries(groupsData)) {
+            const container = document.getElementById(`matches_${group}`);
+            const pairs = [[0,1], [2,3], [0,2], [1,3], [0,3], [1,2]];
+            pairs.forEach((pair, idx) => {
+                const mId = `G_${group}_${idx+1}`;
+                container.insertAdjacentHTML('beforeend', `<div class="match-row"><span class="match-team home">${teams[pair[0]]}</span><input type="number" min="0" class="match-score" id="${mId}_home" onchange="updateGroupStandings()"><span class="vs">v</span><input type="number" min="0" class="match-score" id="${mId}_away" onchange="updateGroupStandings()"><span class="match-team away">${teams[pair[1]]}</span></div>`);
+                groupMatches.push({ id: mId, group: group, home: teams[pair[0]], away: teams[pair[1]] });
+            });
+        }
+    }
+
+    function initKnockoutUI() {
+        const configs = [['R32', 16], ['R16', 8], ['QF', 4], ['SF', 2], ['F', 1]];
+        configs.forEach(([pfx, count]) => {
+            const container = document.getElementById(`${pfx.toLowerCase()}_container`);
+            for (let i = 1; i <= count; i++) {
+                const mId = `${pfx}_${i}`;
+                container.insertAdjacentHTML('beforeend', `<div class="match-row" style="background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 5px;"><div style="display:flex; flex-direction:column; width:100%; gap:6px;"><div style="display:flex; justify-content:space-between; align-items:center;"><span class="match-team" id="${mId}_home_name">TBD</span><input type="number" min="0" class="match-score" id="${mId}_home" onchange="evaluateKoWinner('${mId}')"></div><div style="display:flex; justify-content:space-between; align-items:center;"><span class="match-team" id="${mId}_away_name">TBD</span><input type="number" min="0" class="match-score" id="${mId}_away" onchange="evaluateKoWinner('${mId}')"></div></div></div>`);
+            }
+        });
+    }
+
+    function updateGroupStandings() {
+        const standings = {};
+        for (const group in groupsData) standings[group] = groupsData[group].map(t => ({ name: t, p: 0, gf: 0, ga: 0, gd: 0, pts: 0 }));
+        groupMatches.forEach(m => {
+            const h = document.getElementById(`${m.id}_home`).value, a = document.getElementById(`${m.id}_away`).value;
+            if (h !== "" && a !== "") {
+                const th = standings[m.group].find(t => t.name === m.home), ta = standings[m.group].find(t => t.name === m.away);
+                th.p++; ta.p++; th.gf += +h; th.ga += +a; ta.gf += +a; ta.ga += +h;
+                if (+h > +a) th.pts += 3; else if (+a > +h) ta.pts += 3; else { th.pts += 1; ta.pts += 1; }
+                th.gd = th.gf - th.ga; ta.gd = ta.gf - ta.ga;
+            }
+        });
+        for (const group in standings) {
+            standings[group].sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+            document.getElementById(`table_body_${group}`).innerHTML = standings[group].map((t, idx) => `<tr style="${idx < 2 ? 'background:rgba(34,197,94,0.1);' : idx===2 ? 'background:rgba(56,189,248,0.05);' : ''}"><td class="team-name">${t.name}</td><td>${t.p}</td><td>${t.gd > 0 ? '+'+t.gd : t.gd}</td><td><strong>${t.pts}</strong></td></tr>`).join('');
+            const winners = standings[group][0].name, runnersUp = standings[group][1].name;
+            // Update bracket labels dynamically (simplified)
+        }
+    }
+
+    function evaluateKoWinner(matchId) {
+        const hVal = document.getElementById(`${matchId}_home`).value, aVal = document.getElementById(`${matchId}_away`).value;
+        const hName = document.getElementById(`${matchId}_home_name`).innerText, aName = document.getElementById(`${matchId}_away_name`).innerText;
+        const route = koRouting[matchId];
+        if (!route || route.landmark) return;
+        let winner = 'TBD';
+        if (hVal !== "" && aVal !== "" && hName !== 'TBD' && aName !== 'TBD') {
+            if (+hVal > +aVal) winner = hName; else if (+aVal > +hVal) winner = aName;
+        }
+        const nextElem = document.getElementById(`${route.next}_${route.slot}_name`);
+        if (nextElem) { nextElem.innerText = winner; evaluateKoWinner(route.next); }
+    }
+
+    function exportData() {
+        const obj = { name: document.getElementById('participant_name').value || 'Anonymous', groupMatches: {}, koMatches: {}, bonus: { boot: document.getElementById('bonus_boot').value, glove: document.getElementById('bonus_glove').value, potr: document.getElementById('bonus_potr').value, ypt: document.getElementById('bonus_ypt').value } };
+        groupMatches.forEach(m => obj.groupMatches[m.id] = { home: document.getElementById(`${m.id}_home`).value, away: document.getElementById(`${m.id}_away`).value });
+        ['R32', 'R16', 'QF', 'SF', 'F'].forEach(p => { for(let i=1; i<=16; i++) { if(document.getElementById(`${p}_${i}_home`)) obj.koMatches[`${p}_${i}`] = { home: document.getElementById(`${p}_${i}_home`).value, away: document.getElementById(`${p}_${i}_away`).value }; }});
+        document.getElementById('export_output').value = btoa(JSON.stringify(obj));
+    }
+
+    function addFriendToSystem() {
+        try {
+            const friend = JSON.parse(atob(document.getElementById('admin_input_code').value.trim()));
+            const idx = friendsList.findIndex(x => x.name === friend.name);
+            if (idx > -1) friendsList[idx] = friend; else friendsList.push(friend);
+            localStorage.setItem('wc_friends_data', JSON.stringify(friendsList));
+            recalculateLeaderboard();
+            alert("Updated!");
+        } catch(e) { alert("Invalid code."); }
+    }
+
+    function saveOfficialResults() {
+        const off = { groupMatches: {}, koMatches: {}, bonus: { boot: document.getElementById('bonus_boot').value, glove: document.getElementById('bonus_glove').value, potr: document.getElementById('bonus_potr').value, ypt: document.getElementById('bonus_ypt').value } };
+        groupMatches.forEach(m => off.groupMatches[m.id] = { home: document.getElementById(`${m.id}_home`).value, away: document.getElementById(`${m.id}_away`).value });
+        ['R32', 'R16', 'QF', 'SF', 'F'].forEach(p => { for(let i=1; i<=16; i++) { if(document.getElementById(`${p}_${i}_home`)) off.koMatches[`${p}_${i}`] = { home: document.getElementById(`${p}_${i}_home`).value, away: document.getElementById(`${p}_${i}_away`).value }; }});
+        localStorage.setItem('wc_official_results', JSON.stringify(off));
+        recalculateLeaderboard();
+    }
+
+    function loadSavedOfficialScores() {
+        const saved = localStorage.getItem('wc_official_results');
+        if (!saved) return;
+        const off = JSON.parse(saved);
+        for (const mId in off.groupMatches) {
+            const h = document.getElementById(`${mId}_home`), a = document.getElementById(`${mId}_away`);
+            if (h) { h.value = off.groupMatches[mId].home; a.value = off.groupMatches[mId].away; }
+        }
+        for (const mId in off.koMatches) {
+            const h = document.getElementById(`${mId}_home`), a = document.getElementById(`${mId}_away`);
+            if (h) { h.value = off.koMatches[mId].home; a.value = off.koMatches[mId].away; evaluateKoWinner(mId); }
+        }
+    }
+
+    function recalculateLeaderboard() {
+        const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
+        document.getElementById('leaderboard_body').innerHTML = friendsList.map(pl => {
+            let pts = 0;
+            // Simplified scoring logic
+            return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="friendsList = friendsList.filter(x=>x.name!=='${pl.name}'); localStorage.setItem('wc_friends_data', JSON.stringify(friendsList)); recalculateLeaderboard();">Delete</button></td></tr>`;
+        }).join('');
+    }
+</script>
+</body>
+</html>
