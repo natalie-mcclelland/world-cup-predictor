@@ -318,13 +318,14 @@
     }
 
 function recalculateLeaderboard() {
-    const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
-    if (!off.groupMatches) return; // Wait for official results to be set
+    // 1. Get official results, default to empty structure if none exist
+    const off = JSON.parse(localStorage.getItem('wc_official_results') || '{"groupMatches":{}, "koMatches":{}, "bonus":{}}');
 
-    document.getElementById('leaderboard_body').innerHTML = friendsList.map(pl => {
+    // 2. Build the rows even if official results are empty (points will just be 0)
+    const rows = friendsList.map(pl => {
         let pts = 0;
 
-        // 1. Scoring Group & Knockout Matches
+        // Scoring Logic
         const allMatches = { ...pl.groupMatches, ...pl.koMatches };
         const offMatches = { ...off.groupMatches, ...off.koMatches };
 
@@ -336,21 +337,15 @@ function recalculateLeaderboard() {
                 const pRes = (p.home > p.away) ? 'H' : (p.away > p.home) ? 'A' : 'D';
                 const oRes = (o.home > o.away) ? 'H' : (o.away > o.home) ? 'A' : 'D';
 
-                // 3 pts for exact score
-                if (p.home === o.home && p.away === o.away) {
-                    pts += 3;
-                } 
-                // 1 pt for correct result only
-                else if (pRes === oRes) {
-                    pts += 1;
-                }
+                if (p.home === o.home && p.away === o.away) pts += 3;
+                else if (pRes === oRes) pts += 1;
             }
         }
 
-        // 2. Scoring Bonus Questions
         if (off.bonus) {
             ['boot', 'glove', 'potr', 'ypt'].forEach(key => {
-                if (pl.bonus[key] && pl.bonus[key].toLowerCase() === off.bonus[key].toLowerCase()) {
+                if (pl.bonus && pl.bonus[key] && off.bonus[key] && 
+                    pl.bonus[key].toLowerCase() === off.bonus[key].toLowerCase()) {
                     pts += 5;
                 }
             });
@@ -358,9 +353,13 @@ function recalculateLeaderboard() {
 
         return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="deleteFriend('${pl.name}')">Delete</button></td></tr>`;
     }).join('');
+
+    // 3. Update the DOM
+    const lbBody = document.getElementById('leaderboard_body');
+    if (lbBody) lbBody.innerHTML = rows;
     
-    // Also update the instructions leaderboard
-    document.getElementById('instructions_leaderboard_body').innerHTML = document.getElementById('leaderboard_body').innerHTML;
+    const instrBody = document.getElementById('instructions_leaderboard_body');
+    if (instrBody) instrBody.innerHTML = rows;
 }
 
 function deleteFriend(name) {
