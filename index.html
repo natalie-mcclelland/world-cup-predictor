@@ -96,12 +96,8 @@
 		<p></p>
         <h3>🏆 Live Leaderboard</h3>
         <table>
-			<p style="color: var(--text-muted); font-size: 0.9rem;">
-        		This leaderboard is updated by the organizer. Refresh the page to see the latest scores.
-    		</p>
-    		<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSzdiGDQaPKGWKmEFuikWNvnEtwJcb-ai8__7VoYjM26ehci8aQk708f6SXfIsZKJ_tsD87EON4y7SG/pubhtml" 
-            	width="100%" height="300px" style="border:none; border-radius: 8px;">
-    		</iframe>
+            <thead><tr><th>Name</th><th>Points</th></tr></thead>
+            <tbody id="instructions_leaderboard_body"></tbody>
         </table>
 		<p></p>
 		<h3>Data Recovery</h3>
@@ -364,13 +360,7 @@ function recalculateLeaderboard() {
     }).join('');
     
     // Also update the instructions leaderboard
-    //const instructionsBoard =
-   // document.getElementById('instructions_leaderboard_body');
-
-//if (instructionsBoard) {
-   // instructionsBoard.innerHTML =
-       // document.getElementById('leaderboard_body').innerHTML;
-//}
+    document.getElementById('instructions_leaderboard_body').innerHTML = document.getElementById('leaderboard_body').innerHTML;
 }
 
 function deleteFriend(name) {
