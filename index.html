@@ -14,21 +14,12 @@
             --border: #334155;
             --success: #22c55e;
         }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-        }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 40px; }
         h1 { color: var(--accent); margin-bottom: 5px; }
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tab-btn {
-            background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border);
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
-        }
+        .tab-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .tab-btn.active, .tab-btn:hover { background: var(--accent); color: var(--bg-color); border-color: var(--accent); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -67,14 +58,44 @@
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('group_stage', this)">1. Predict Groups</button>
+        <button class="tab-btn active" onclick="switchTab('instructions', this)">ℹ️ Instructions</button>
+        <button class="tab-btn" onclick="switchTab('group_stage', this)">1. Predict Groups</button>
         <button class="tab-btn" onclick="switchTab('official_standings', this)" style="border-color: rgba(56, 189, 248, 0.4)">📊 Official Group Tables</button>
         <button class="tab-btn" onclick="switchTab('knockout_stage', this)">2. Predict Knockouts</button>
         <button class="tab-btn" onclick="switchTab('bonus_stage', this)">3. Bonus & Export</button>
         <button class="tab-btn" onclick="switchTab('admin_stage', this)" style="border-color: var(--accent)">🛡️ Admin Dashboard</button>
     </div>
 
-    <div id="group_stage" class="tab-content active">
+    <div id="instructions" class="tab-content active">
+    <div class="bonus-group">
+        <h3>How to Play</h3>
+        <ul style="line-height: 1.6; color: var(--text-muted);">
+                <li><strong>Step 1:</strong> Fill out your Group Stage predictions.</li>
+                <li><strong>Step 2:</strong> Enter your Bonus picks and Name in the "Bonus & Export" tab.</li>
+                <li><strong>Final Step:</strong> Click "Generate My Code", copy the result, and send it to your organizer.</li>
+				<li><strong>REMEMBER:</strong> You need to come back at each knockout phase to update your knockout predictions, regenerate your code and send on to the organizer.</li>
+				<p></p>
+				<strong>When predicting the knockout phases please use the same device you did your group stage predictions on. Your device will remember who you are and your predictions so you can keep track of your
+				results and to link all of your predictions to your original entry.</strong>
+				<p></p>
+				<li><strong>Key Dates:</strong> </li>
+				<li>Round of 32: Submit by 4:00 PM on 28th June.</li>
+				<li>Round of 16: Submit by 4:00 PM on 4th July.</li>
+				<li>Quarter-finals: Submit by 4:00 PM on 9th July.</li>
+				<li>Semi-finals: Submit by 4:00 PM on 14th July.</li>
+				<li>Final: Submit by 4:00 PM on 19th July.</li>
+
+            </ul>
+			<p></p>
+        <h3>🏆 Live Leaderboard</h3>
+        <table>
+            <thead><tr><th>Name</th><th>Points</th></tr></thead>
+            <tbody id="instructions_leaderboard_body"></tbody>
+        </table>
+    </div>
+	</div>
+
+    <div id="group_stage" class="tab-content">
         <div class="groups-grid" id="groups_grid"></div>
     </div>
 
@@ -142,6 +163,7 @@
 </div>
 
 <script>
+    // [Keep your original logic here]
     const groupsData = {
         A: ["Mexico", "South Africa", "South Korea", "Czechia"],
         B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
@@ -158,52 +180,27 @@
     };
 
     const groupMatches = [];
-    const koRouting = {
-        'R32_1': { next: 'R16_1', slot: 'home' }, 'R32_2': { next: 'R16_1', slot: 'away' },
-        'R32_3': { next: 'R16_2', slot: 'home' }, 'R32_4': { next: 'R16_2', slot: 'away' },
-        'R32_5': { next: 'R16_3', slot: 'home' }, 'R32_6': { next: 'R16_3', slot: 'away' },
-        'R32_7': { next: 'R16_4', slot: 'home' }, 'R32_8': { next: 'R16_4', slot: 'away' },
-        'R32_9': { next: 'R16_5', slot: 'home' }, 'R32_10': { next: 'R16_5', slot: 'away' },
-        'R32_11': { next: 'R16_6', slot: 'home' }, 'R32_12': { next: 'R16_6', slot: 'away' },
-        'R32_13': { next: 'R16_7', slot: 'home' }, 'R32_14': { next: 'R16_7', slot: 'away' },
-        'R32_15': { landmark: true }, 'R32_16': { landmark: true },
-        'R16_1': { next: 'QF_1', slot: 'home' }, 'R16_2': { next: 'QF_1', slot: 'away' },
-        'R16_3': { next: 'QF_2', slot: 'home' }, 'R16_4': { next: 'QF_2', slot: 'away' },
-        'R16_5': { next: 'QF_3', slot: 'home' }, 'R16_6': { next: 'QF_3', slot: 'away' },
-        'R16_7': { next: 'QF_4', slot: 'home' }, 'R16_8': { next: 'QF_4', slot: 'away' },
-        'QF_1': { next: 'SF_1', slot: 'home' }, 'QF_2': { next: 'SF_1', slot: 'away' },
-        'QF_3': { next: 'SF_2', slot: 'home' }, 'QF_4': { next: 'SF_2', slot: 'away' },
-        'SF_1': { next: 'F_1', slot: 'home' }, 'SF_2': { next: 'F_1', slot: 'away' }
-    };
-
+    const koRouting = { 'R32_1': { next: 'R16_1', slot: 'home' }, 'R32_2': { next: 'R16_1', slot: 'away' }, 'R32_3': { next: 'R16_2', slot: 'home' }, 'R32_4': { next: 'R16_2', slot: 'away' }, 'R32_5': { next: 'R16_3', slot: 'home' }, 'R32_6': { next: 'R16_3', slot: 'away' }, 'R32_7': { next: 'R16_4', slot: 'home' }, 'R32_8': { next: 'R16_4', slot: 'away' }, 'R32_9': { next: 'R16_5', slot: 'home' }, 'R32_10': { next: 'R16_5', slot: 'away' }, 'R32_11': { next: 'R16_6', slot: 'home' }, 'R32_12': { next: 'R16_6', slot: 'away' }, 'R32_13': { next: 'R16_7', slot: 'home' }, 'R32_14': { next: 'R16_7', slot: 'away' }, 'R32_15': { landmark: true }, 'R32_16': { landmark: true }, 'R16_1': { next: 'QF_1', slot: 'home' }, 'R16_2': { next: 'QF_1', slot: 'away' }, 'R16_3': { next: 'QF_2', slot: 'home' }, 'R16_4': { next: 'QF_2', slot: 'away' }, 'R16_5': { next: 'QF_3', slot: 'home' }, 'R16_6': { next: 'QF_3', slot: 'away' }, 'R16_7': { next: 'QF_4', slot: 'home' }, 'R16_8': { next: 'QF_4', slot: 'away' }, 'QF_1': { next: 'SF_1', slot: 'home' }, 'QF_2': { next: 'SF_1', slot: 'away' }, 'QF_3': { next: 'SF_2', slot: 'home' }, 'QF_4': { next: 'SF_2', slot: 'away' }, 'SF_1': { next: 'F_1', slot: 'home' }, 'SF_2': { next: 'F_1', slot: 'away' } };
     let friendsList = JSON.parse(localStorage.getItem('wc_friends_data')) || [];
 
-    document.addEventListener("DOMContentLoaded", () => {
-        initGroupsUI();
-        initGroupMatches();
-        initKnockoutUI();
-        loadSavedOfficialScores();
-        updateGroupStandings();
-        recalculateLeaderboard();
-    });
-
-function switchTab(tabId, btn) {
-    // Check if user is trying to access Admin
-    if (tabId === 'admin_stage') {
-        const password = prompt("Enter Admin Password:");
-        if (password !== "+HlprudlpH!s?aprlcob7DiT01brL2r7cIcre7ac_ub#Sw1Qap") { // CHANGE THIS PASSWORD
-            alert("Access Denied!");
-            return;
+    function switchTab(tabId, btn) {
+        if (tabId === 'admin_stage') {
+            const password = prompt("Enter Admin Password:");
+            if (password !== "+HlprudlpH!s?aprlcob7DiT01brL2r7cIcre7ac_ub#Sw1Qap") { alert("Access Denied!"); return; }
         }
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
     }
 
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
-}
+    // Your initialization functions remain unchanged
+    document.addEventListener("DOMContentLoaded", () => {
+        initGroupsUI(); initGroupMatches(); initKnockoutUI(); loadSavedOfficialScores(); updateGroupStandings(); recalculateLeaderboard();
+    });
 
-    function initGroupsUI() {
+    // ... [Insert your original functions here (initGroupsUI, etc.)] ...
+	 function initGroupsUI() {
         const grid = document.getElementById('groups_grid');
         const officialGrid = document.getElementById('official_standings_grid');
         for (const group in groupsData) {
@@ -308,14 +305,27 @@ function switchTab(tabId, btn) {
         }
     }
 
-    function recalculateLeaderboard() {
-        const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
-        document.getElementById('leaderboard_body').innerHTML = friendsList.map(pl => {
-            let pts = 0;
-            // Simplified scoring logic
-            return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="friendsList = friendsList.filter(x=>x.name!=='${pl.name}'); localStorage.setItem('wc_friends_data', JSON.stringify(friendsList)); recalculateLeaderboard();">Delete</button></td></tr>`;
-        }).join('');
-    }
+	function recalculateLeaderboard() {
+		const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
+    
+		// Create the rows
+		const rows = friendsList.map(pl => {
+			let pts = 0; // Add your actual scoring logic here
+			return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="friendsList = friendsList.filter(x=>x.name!=='${pl.name}'); localStorage.setItem('wc_friends_data', JSON.stringify(friendsList)); recalculateLeaderboard();">Delete</button></td></tr>`;
+		}).join('');
+
+		// Update the Admin page table
+		const adminBody = document.getElementById('leaderboard_body');
+		if (adminBody) adminBody.innerHTML = rows;
+
+		// Update the Instructions page table (without the delete button)
+		const instBody = document.getElementById('instructions_leaderboard_body');
+		if (instBody) {
+			instBody.innerHTML = friendsList.map(pl => 
+				`<tr><td>${pl.name}</td><td>0 pts</td></tr>`
+			).join('');
+		}
+	}
 </script>
 </body>
 </html>
