@@ -364,7 +364,13 @@ function recalculateLeaderboard() {
     }).join('');
     
     // Also update the instructions leaderboard
-    document.getElementById('instructions_leaderboard_body').innerHTML = document.getElementById('leaderboard_body').innerHTML;
+    const instructionsBoard =
+    document.getElementById('instructions_leaderboard_body');
+
+if (instructionsBoard) {
+    instructionsBoard.innerHTML =
+        document.getElementById('leaderboard_body').innerHTML;
+}
 }
 
 function deleteFriend(name) {
