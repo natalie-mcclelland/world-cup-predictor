@@ -310,27 +310,57 @@
         }
     }
 
-	function recalculateLeaderboard() {
-		const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
+function recalculateLeaderboard() {
+    const off = JSON.parse(localStorage.getItem('wc_official_results') || '{}');
+    if (!off.groupMatches) return; // Wait for official results to be set
+
+    document.getElementById('leaderboard_body').innerHTML = friendsList.map(pl => {
+        let pts = 0;
+
+        // 1. Scoring Group & Knockout Matches
+        const allMatches = { ...pl.groupMatches, ...pl.koMatches };
+        const offMatches = { ...off.groupMatches, ...off.koMatches };
+
+        for (const mId in offMatches) {
+            if (allMatches[mId] && offMatches[mId].home !== "" && offMatches[mId].away !== "") {
+                const p = allMatches[mId];
+                const o = offMatches[mId];
+                
+                const pRes = (p.home > p.away) ? 'H' : (p.away > p.home) ? 'A' : 'D';
+                const oRes = (o.home > o.away) ? 'H' : (o.away > o.home) ? 'A' : 'D';
+
+                // 3 pts for exact score
+                if (p.home === o.home && p.away === o.away) {
+                    pts += 3;
+                } 
+                // 1 pt for correct result only
+                else if (pRes === oRes) {
+                    pts += 1;
+                }
+            }
+        }
+
+        // 2. Scoring Bonus Questions
+        if (off.bonus) {
+            ['boot', 'glove', 'potr', 'ypt'].forEach(key => {
+                if (pl.bonus[key] && pl.bonus[key].toLowerCase() === off.bonus[key].toLowerCase()) {
+                    pts += 5;
+                }
+            });
+        }
+
+        return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="deleteFriend('${pl.name}')">Delete</button></td></tr>`;
+    }).join('');
     
-		// Create the rows
-		const rows = friendsList.map(pl => {
-			let pts = 0; // Add your actual scoring logic here
-			return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="friendsList = friendsList.filter(x=>x.name!=='${pl.name}'); localStorage.setItem('wc_friends_data', JSON.stringify(friendsList)); recalculateLeaderboard();">Delete</button></td></tr>`;
-		}).join('');
+    // Also update the instructions leaderboard
+    document.getElementById('instructions_leaderboard_body').innerHTML = document.getElementById('leaderboard_body').innerHTML;
+}
 
-		// Update the Admin page table
-		const adminBody = document.getElementById('leaderboard_body');
-		if (adminBody) adminBody.innerHTML = rows;
-
-		// Update the Instructions page table (without the delete button)
-		const instBody = document.getElementById('instructions_leaderboard_body');
-		if (instBody) {
-			instBody.innerHTML = friendsList.map(pl => 
-				`<tr><td>${pl.name}</td><td>0 pts</td></tr>`
-			).join('');
-		}
-	}
+function deleteFriend(name) {
+    friendsList = friendsList.filter(x => x.name !== name);
+    localStorage.setItem('wc_friends_data', JSON.stringify(friendsList));
+    recalculateLeaderboard();
+}
 	
 	function restoreMyData() {
     const code = document.getElementById('restore_input').value.trim();
