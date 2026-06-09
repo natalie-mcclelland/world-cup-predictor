@@ -92,6 +92,11 @@
             <thead><tr><th>Name</th><th>Points</th></tr></thead>
             <tbody id="instructions_leaderboard_body"></tbody>
         </table>
+		<p></p>
+		<h3>Data Recovery</h3>
+		<p>If you refreshed the page and lost your progress, paste your last saved code here:</p>
+		<textarea id="restore_input" placeholder="Paste your generated code here..."></textarea><p></p>
+		<button class="btn-primary" onclick="restoreMyData()">🔄 Restore My Predictions</button>
     </div>
 	</div>
 
@@ -326,6 +331,34 @@
 			).join('');
 		}
 	}
+	
+	function restoreMyData() {
+    const code = document.getElementById('restore_input').value.trim();
+    try {
+        const data = JSON.parse(atob(code));
+        
+        // Restore Name
+        document.getElementById('participant_name').value = data.name;
+        
+        // Restore Group Matches
+        for (const mId in data.groupMatches) {
+            document.getElementById(`${mId}_home`).value = data.groupMatches[mId].home;
+            document.getElementById(`${mId}_away`).value = data.groupMatches[mId].away;
+        }
+        
+        // Restore Knockouts
+        for (const mId in data.koMatches) {
+            document.getElementById(`${mId}_home`).value = data.koMatches[mId].home;
+            document.getElementById(`${mId}_away`).value = data.koMatches[mId].away;
+            evaluateKoWinner(mId); // This recalculates who advances
+        }
+        
+        updateGroupStandings();
+        alert("Predictions Restored Successfully!");
+    } catch(e) {
+        alert("Invalid code. Please check that you copied the whole string.");
+    }
+}
 </script>
 </body>
 </html>
