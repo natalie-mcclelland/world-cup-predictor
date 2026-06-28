@@ -176,7 +176,6 @@
 </div>
 
 <script>
-    // [Keep your original logic here]
     const groupsData = {
         A: ["Mexico", "South Africa", "South Korea", "Czechia"],
         B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
@@ -207,13 +206,17 @@
         btn.classList.add('active');
     }
 
-    // Your initialization functions remain unchanged
     document.addEventListener("DOMContentLoaded", () => {
-        initGroupsUI(); initGroupMatches(); initKnockoutUI(); loadSavedOfficialScores(); updateGroupStandings(); recalculateLeaderboard();
+        initGroupsUI(); 
+        initGroupMatches(); 
+        initKnockoutUI(); 
+        loadSavedOfficialScores(); 
+        updateGroupStandings(); 
+        updateKnockoutBracket(); // Explicitly populate verified teams on load
+        recalculateLeaderboard();
     });
 
-    // ... [Insert your original functions here (initGroupsUI, etc.)] ...
-	 function initGroupsUI() {
+    function initGroupsUI() {
         const grid = document.getElementById('groups_grid');
         const officialGrid = document.getElementById('official_standings_grid');
         for (const group in groupsData) {
@@ -260,8 +263,44 @@
         for (const group in standings) {
             standings[group].sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
             document.getElementById(`table_body_${group}`).innerHTML = standings[group].map((t, idx) => `<tr style="${idx < 2 ? 'background:rgba(34,197,94,0.1);' : idx===2 ? 'background:rgba(56,189,248,0.05);' : ''}"><td class="team-name">${t.name}</td><td>${t.p}</td><td>${t.gd > 0 ? '+'+t.gd : t.gd}</td><td><strong>${t.pts}</strong></td></tr>`).join('');
-            const winners = standings[group][0].name, runnersUp = standings[group][1].name;
-            // Update bracket labels dynamically (simplified)
+        }
+        
+        // Push the official fixtures out to the UI elements
+        updateKnockoutBracket();
+    }
+
+    function updateKnockoutBracket() {
+        // Real-world confirmed Round of 32 Match Assignments 
+        // Synchronized with your array names (e.g. "Côte d'Ivoire", "Cabo Verde", "United States")
+        const bracketMapping = {
+            'R32_1':  { home: 'South Africa',        away: 'Canada' },                 // M73
+            'R32_2':  { home: 'Germany',             away: 'Paraguay' },               // M74
+            'R32_3':  { home: 'Netherlands',         away: 'Morocco' },                // M75
+            'R32_4':  { home: 'Brazil',              away: 'Japan' },                  // M76
+            'R32_5':  { home: 'France',              away: 'Sweden' },                 // M77
+            'R32_6':  { home: "Côte d'Ivoire",       away: 'Norway' },                 // M78
+            'R32_7':  { home: 'Mexico',              away: 'Ecuador' },                // M79
+            'R32_8':  { home: 'England',             away: 'DR Congo' },               // M80
+            'R32_9':  { home: 'United States',       away: 'Bosnia and Herzegovina' }, // M81
+            'R32_10': { home: 'Belgium',             away: 'Senegal' },                // M82
+            'R32_11': { home: 'Portugal',            away: 'Croatia' },                // M83
+            'R32_12': { home: 'Spain',               away: 'Austria' },                // M84
+            'R32_13': { home: 'Switzerland',         away: 'Algeria' },                // M85
+            'R32_14': { home: 'Argentina',           away: 'Cabo Verde' },             // M86
+            'R32_15': { home: 'Colombia',            away: 'Ghana' },                  // M87
+            'R32_16': { home: 'Australia',           away: 'Egypt' }                   // M88
+        };
+
+        // Populate the team headers inside the HTML layout dynamically
+        for (const matchId in bracketMapping) {
+            const homeElem = document.getElementById(`${matchId}_home_name`);
+            const awayElem = document.getElementById(`${matchId}_away_name`);
+            
+            if (homeElem) homeElem.innerText = bracketMapping[matchId].home;
+            if (awayElem) awayElem.innerText = bracketMapping[matchId].away;
+
+            // Trigger cascading updates down the rest of the bracket pathing 
+            evaluateKoWinner(matchId);
         }
     }
 
@@ -318,84 +357,70 @@
         }
     }
 
-function recalculateLeaderboard() {
-    // 1. Get official results, default to empty structure if none exist
-    const off = JSON.parse(localStorage.getItem('wc_official_results') || '{"groupMatches":{}, "koMatches":{}, "bonus":{}}');
+    function recalculateLeaderboard() {
+        const off = JSON.parse(localStorage.getItem('wc_official_results') || '{"groupMatches":{}, "koMatches":{}, "bonus":{}}');
+        const rows = friendsList.map(pl => {
+            let pts = 0;
+            const allMatches = { ...pl.groupMatches, ...pl.koMatches };
+            const offMatches = { ...off.groupMatches, ...off.koMatches };
 
-    // 2. Build the rows even if official results are empty (points will just be 0)
-    const rows = friendsList.map(pl => {
-        let pts = 0;
+            for (const mId in offMatches) {
+                if (allMatches[mId] && offMatches[mId].home !== "" && offMatches[mId].away !== "") {
+                    const p = allMatches[mId];
+                    const o = offMatches[mId];
+                    const pRes = (p.home > p.away) ? 'H' : (p.away > p.home) ? 'A' : 'D';
+                    const oRes = (o.home > o.away) ? 'H' : (o.away > o.home) ? 'A' : 'D';
 
-        // Scoring Logic
-        const allMatches = { ...pl.groupMatches, ...pl.koMatches };
-        const offMatches = { ...off.groupMatches, ...off.koMatches };
-
-        for (const mId in offMatches) {
-            if (allMatches[mId] && offMatches[mId].home !== "" && offMatches[mId].away !== "") {
-                const p = allMatches[mId];
-                const o = offMatches[mId];
-                
-                const pRes = (p.home > p.away) ? 'H' : (p.away > p.home) ? 'A' : 'D';
-                const oRes = (o.home > o.away) ? 'H' : (o.away > o.home) ? 'A' : 'D';
-
-                if (p.home === o.home && p.away === o.away) pts += 3;
-                else if (pRes === oRes) pts += 1;
-            }
-        }
-
-        if (off.bonus) {
-            ['boot', 'glove', 'potr', 'ypt'].forEach(key => {
-                if (pl.bonus && pl.bonus[key] && off.bonus[key] && 
-                    pl.bonus[key].toLowerCase() === off.bonus[key].toLowerCase()) {
-                    pts += 5;
+                    if (p.home === o.home && p.away === o.away) pts += 3;
+                    else if (pRes === oRes) pts += 1;
                 }
-            });
-        }
+            }
 
-        return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="deleteFriend('${pl.name}')">Delete</button></td></tr>`;
-    }).join('');
+            if (off.bonus) {
+                ['boot', 'glove', 'potr', 'ypt'].forEach(key => {
+                    if (pl.bonus && pl.bonus[key] && off.bonus[key] && 
+                        pl.bonus[key].toLowerCase() === off.bonus[key].toLowerCase()) {
+                        pts += 5;
+                    }
+                });
+            }
 
-    // 3. Update the DOM
-    const lbBody = document.getElementById('leaderboard_body');
-    if (lbBody) lbBody.innerHTML = rows;
-    
-    const instrBody = document.getElementById('instructions_leaderboard_body');
-    if (instrBody) instrBody.innerHTML = rows;
-}
+            return `<tr><td>${pl.name}</td><td>${pts} pts</td><td><button class="btn-danger" onclick="deleteFriend('${pl.name}')">Delete</button></td></tr>`;
+        }).join('');
 
-function deleteFriend(name) {
-    friendsList = friendsList.filter(x => x.name !== name);
-    localStorage.setItem('wc_friends_data', JSON.stringify(friendsList));
-    recalculateLeaderboard();
-}
-	
-	function restoreMyData() {
-    const code = document.getElementById('restore_input').value.trim();
-    try {
-        const data = JSON.parse(atob(code));
+        const lbBody = document.getElementById('leaderboard_body');
+        if (lbBody) lbBody.innerHTML = rows;
         
-        // Restore Name
-        document.getElementById('participant_name').value = data.name;
-        
-        // Restore Group Matches
-        for (const mId in data.groupMatches) {
-            document.getElementById(`${mId}_home`).value = data.groupMatches[mId].home;
-            document.getElementById(`${mId}_away`).value = data.groupMatches[mId].away;
-        }
-        
-        // Restore Knockouts
-        for (const mId in data.koMatches) {
-            document.getElementById(`${mId}_home`).value = data.koMatches[mId].home;
-            document.getElementById(`${mId}_away`).value = data.koMatches[mId].away;
-            evaluateKoWinner(mId); // This recalculates who advances
-        }
-        
-        updateGroupStandings();
-        alert("Predictions Restored Successfully!");
-    } catch(e) {
-        alert("Invalid code. Please check that you copied the whole string.");
+        const instrBody = document.getElementById('instructions_leaderboard_body');
+        if (instrBody) instrBody.innerHTML = rows;
     }
-}
+
+    function deleteFriend(name) {
+        friendsList = friendsList.filter(x => x.name !== name);
+        localStorage.setItem('wc_friends_data', JSON.stringify(friendsList));
+        recalculateLeaderboard();
+    }
+        
+    function restoreMyData() {
+        const code = document.getElementById('restore_input').value.trim();
+        try {
+            const data = JSON.parse(atob(code));
+            document.getElementById('participant_name').value = data.name;
+            for (const mId in data.groupMatches) {
+                document.getElementById(`${mId}_home`).value = data.groupMatches[mId].home;
+                document.getElementById(`${mId}_away`).value = data.groupMatches[mId].away;
+            }
+            for (const mId in data.koMatches) {
+                document.getElementById(`${mId}_home`).value = data.koMatches[mId].home;
+                document.getElementById(`${mId}_away`).value = data.koMatches[mId].away;
+                evaluateKoWinner(mId); 
+            }
+            updateGroupStandings();
+            alert("Predictions Restored Successfully!");
+        } catch(e) {
+            alert("Invalid code. Please check that you copied the whole string.");
+        }
+    }
 </script>
 </body>
 </html>
