@@ -73,40 +73,40 @@
                 <li><strong>Step 1:</strong> Fill out your Group Stage predictions.</li>
                 <li><strong>Step 2:</strong> Enter your Bonus picks and Name in the "Bonus & Export" tab.</li>
                 <li><strong>Final Step:</strong> Click "Generate My Code", copy the result, and send it to your organizer.</li>
-				<li><strong>REMEMBER:</strong> You need to come back at each knockout phase to update your knockout predictions, regenerate your code and send on to the organizer.</li>
-				<p></p>
-				<strong>When predicting the knockout phases please use the same device you did your group stage predictions on. Your device will remember who you are and your predictions so you can keep track of your
-				results and to link all of your predictions to your original entry. If however you lose your predictions use the box below to restore them using your last saved code.</strong>
-				<p></p>
-				<li><strong>Key Dates:</strong> </li>
-				<li>Round of 32: Submit by 4:00 PM on 28th June.</li>
-				<li>Round of 16: Submit by 4:00 PM on 4th July.</li>
-				<li>Quarter-finals: Submit by 4:00 PM on 9th July.</li>
-				<li>Semi-finals: Submit by 4:00 PM on 14th July.</li>
-				<li>Final: Submit by 4:00 PM on 19th July.</li>
+                <li><strong>REMEMBER:</strong> You need to come back at each knockout phase to update your knockout predictions, regenerate your code and send on to the organizer.</li>
+                <p></p>
+                <strong>When predicting the knockout phases please use the same device you did your group stage predictions on. Your device will remember who you are and your predictions so you can keep track of your
+                results and to link all of your predictions to your original entry. If however you lose your predictions use the box below to restore them using your last saved code.</strong>
+                <p></p>
+                <li><strong>Key Dates:</strong> </li>
+                <li>Round of 32: Submit by 4:00 PM on 28th June.</li>
+                <li>Round of 16: Submit by 4:00 PM on 4th July.</li>
+                <li>Quarter-finals: Submit by 4:00 PM on 9th July.</li>
+                <li>Semi-finals: Submit by 4:00 PM on 14th July.</li>
+                <li>Final: Submit by 4:00 PM on 19th July.</li>
 
             </ul>
-			<p></p>
-		<h3>🏆 Scoring System</h3>
-    		<ul style="line-height: 1.8; color: var(--text-muted); padding-left: 20px;">
-        		<li><strong>3 Points:</strong> Correct Match Result AND Correct Scoreline.</li>
-        		<li><strong>1 Point:</strong> Correct Match Result only (Home win, Away win, or Draw).</li>
-        		<li><strong>5 Points:</strong> Correct Bonus Answer (Golden Boot, Golden Glove, Player of the Tournament, or Young Player of the Tournament).</li>
-    		</ul>
-		<p></p>
+            <p></p>
+        <h3>🏆 Scoring System</h3>
+            <ul style="line-height: 1.8; color: var(--text-muted); padding-left: 20px;">
+                <li><strong>3 Points:</strong> Correct Match Result AND Correct Scoreline.</li>
+                <li><strong>1 Point:</strong> Correct Match Result only (Home win, Away win, or Draw).</li>
+                <li><strong>5 Points:</strong> Correct Bonus Answer (Golden Boot, Golden Glove, Player of the Tournament, or Young Player of the Tournament).</li>
+            </ul>
+        <p></p>
         <h3>🏆 Live Leaderboard</h3>
         <table>
             <thead><tr><th>Name</th><th>Points</th></tr></thead>
             <tbody id="instructions_leaderboard_body"></tbody>
         </table>
-		<iframe width="550" height="392" frameborder="0" scrolling="no" src="https://1drv.ms/x/c/83bed11398a12c13/IQSgSdxbdYV2SaDkn4C6IRhFAfsWhgL73EjJkPJN47ZOCwA?em=2&wdAllowInteractivity=False&Item='Leaderboard'!F2%3AP17&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edaebf=rslc0"></iframe>
-		<p></p>
-		<h3>Data Recovery</h3>
-		<p>If you refreshed the page and lost your progress, paste your last saved code here:</p>
-		<textarea id="restore_input" placeholder="Paste your generated code here..."></textarea><p></p>
-		<button class="btn-primary" onclick="restoreMyData()">🔄 Restore My Predictions</button>
+        <iframe width="550" height="392" frameborder="0" scrolling="no" src="https://1drv.ms/x/c/83bed11398a12c13/IQSgSdxbdYV2SaDkn4C6IRhFAfsWhgL73EjJkPJN47ZOCwA?em=2&wdAllowInteractivity=False&Item='Leaderboard'!F2%3AP17&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edaebf=rslc0"></iframe>
+        <p></p>
+        <h3>Data Recovery</h3>
+        <p>If you refreshed the page and lost your progress, paste your last saved code here:</p>
+        <textarea id="restore_input" placeholder="Paste your generated code here..."></textarea><p></p>
+        <button class="btn-primary" onclick="restoreMyData()">🔄 Restore My Predictions</button>
     </div>
-	</div>
+    </div>
 
     <div id="group_stage" class="tab-content">
         <div class="groups-grid" id="groups_grid"></div>
@@ -192,7 +192,27 @@
     };
 
     const groupMatches = [];
-    const koRouting = { 'R32_1': { next: 'R16_1', slot: 'home' }, 'R32_2': { next: 'R16_1', slot: 'away' }, 'R32_3': { next: 'R16_2', slot: 'home' }, 'R32_4': { next: 'R16_2', slot: 'away' }, 'R32_5': { next: 'R16_3', slot: 'home' }, 'R32_6': { next: 'R16_3', slot: 'away' }, 'R32_7': { next: 'R16_4', slot: 'home' }, 'R32_8': { next: 'R16_4', slot: 'away' }, 'R32_9': { next: 'R16_5', slot: 'home' }, 'R32_10': { next: 'R16_5', slot: 'away' }, 'R32_11': { next: 'R16_6', slot: 'home' }, 'R32_12': { next: 'R16_6', slot: 'away' }, 'R32_13': { next: 'R16_7', slot: 'home' }, 'R32_14': { next: 'R16_7', slot: 'away' }, 'R32_15': { landmark: true }, 'R32_16': { landmark: true }, 'R16_1': { next: 'QF_1', slot: 'home' }, 'R16_2': { next: 'QF_1', slot: 'away' }, 'R16_3': { next: 'QF_2', slot: 'home' }, 'R16_4': { next: 'QF_2', slot: 'away' }, 'R16_5': { next: 'QF_3', slot: 'home' }, 'R16_6': { next: 'QF_3', slot: 'away' }, 'R16_7': { next: 'QF_4', slot: 'home' }, 'R16_8': { next: 'QF_4', slot: 'away' }, 'QF_1': { next: 'SF_1', slot: 'home' }, 'QF_2': { next: 'SF_1', slot: 'away' }, 'QF_3': { next: 'SF_2', slot: 'home' }, 'QF_4': { next: 'SF_2', slot: 'away' }, 'SF_1': { next: 'F_1', slot: 'home' }, 'SF_2': { next: 'F_1', slot: 'away' } };
+    
+    // UPDATED: Standard paths from R32 are bypassed because R16 is manually overridden with official selections.
+    // Paths from Round of 16 -> Quarter Finals are mapped cleanly here:
+    const koRouting = { 
+        'R16_1': { next: 'QF_1', slot: 'home' }, // M89 Winner -> QF1 Home
+        'R16_2': { next: 'QF_1', slot: 'away' }, // M90 Winner -> QF1 Away
+        'R16_3': { next: 'QF_2', slot: 'home' }, // M91 Winner -> QF2 Home
+        'R16_4': { next: 'QF_2', slot: 'away' }, // M92 Winner -> QF2 Away
+        'R16_5': { next: 'QF_3', slot: 'home' }, // M93 Winner -> QF3 Home
+        'R16_6': { next: 'QF_3', slot: 'away' }, // M94 Winner -> QF3 Away
+        'R16_7': { next: 'QF_4', slot: 'home' }, // M95 Winner -> QF4 Home
+        'R16_8': { next: 'QF_4', slot: 'away' }, // M96 Winner -> QF4 Away
+        
+        'QF_1': { next: 'SF_1', slot: 'home' }, 
+        'QF_2': { next: 'SF_1', slot: 'away' }, 
+        'QF_3': { next: 'SF_2', slot: 'home' }, 
+        'QF_4': { next: 'SF_2', slot: 'away' }, 
+        'SF_1': { next: 'F_1', slot: 'home' }, 
+        'SF_2': { next: 'F_1', slot: 'away' } 
+    };
+    
     let friendsList = JSON.parse(localStorage.getItem('wc_friends_data')) || [];
 
     function switchTab(tabId, btn) {
@@ -271,8 +291,7 @@
 
     function updateKnockoutBracket() {
         // Real-world confirmed Round of 32 Match Assignments 
-        // Synchronized with your array names (e.g. "Côte d'Ivoire", "Cabo Verde", "United States")
-        const bracketMapping = {
+        const r32Mapping = {
             'R32_1':  { home: 'South Africa',        away: 'Canada' },                 // M73
             'R32_2':  { home: 'Germany',             away: 'Paraguay' },               // M74
             'R32_3':  { home: 'Netherlands',         away: 'Morocco' },                // M75
@@ -291,15 +310,33 @@
             'R32_16': { home: 'Australia',           away: 'Egypt' }                   // M88
         };
 
-        // Populate the team headers inside the HTML layout dynamically
-        for (const matchId in bracketMapping) {
+        // NEW: Real-world confirmed Round of 16 Match Assignments (Overriding standard routes)
+        const r16Mapping = {
+            'R16_1':  { home: 'Paraguay',            away: 'France' },                 // M89
+            'R16_2':  { home: 'Canada',              away: 'Morocco' },                // M90
+            'R16_3':  { home: 'Brazil',              away: 'Norway' },                 // M91
+            'R16_4':  { home: 'Mexico',              away: 'England' },                // M92
+            'R16_5':  { home: 'Portugal',            away: 'Spain' },                  // M93
+            'R16_6':  { home: 'United States',       away: 'Belgium' },                // M94
+            'R16_7':  { home: 'Argentina',           away: 'Egypt' },                  // M95
+            'R16_8':  { home: 'Switzerland',         away: 'Colombia' }                // M96
+        };
+
+        // Populate Round of 32
+        for (const matchId in r32Mapping) {
             const homeElem = document.getElementById(`${matchId}_home_name`);
             const awayElem = document.getElementById(`${matchId}_away_name`);
-            
-            if (homeElem) homeElem.innerText = bracketMapping[matchId].home;
-            if (awayElem) awayElem.innerText = bracketMapping[matchId].away;
+            if (homeElem) homeElem.innerText = r32Mapping[matchId].home;
+            if (awayElem) awayElem.innerText = r32Mapping[matchId].away;
+        }
 
-            // Trigger cascading updates down the rest of the bracket pathing 
+        // Populate Round of 16 & trigger cascading updates for following rounds
+        for (const matchId in r16Mapping) {
+            const homeElem = document.getElementById(`${matchId}_home_name`);
+            const awayElem = document.getElementById(`${matchId}_away_name`);
+            if (homeElem) homeElem.innerText = r16Mapping[matchId].home;
+            if (awayElem) awayElem.innerText = r16Mapping[matchId].away;
+
             evaluateKoWinner(matchId);
         }
     }
@@ -308,7 +345,7 @@
         const hVal = document.getElementById(`${matchId}_home`).value, aVal = document.getElementById(`${matchId}_away`).value;
         const hName = document.getElementById(`${matchId}_home_name`).innerText, aName = document.getElementById(`${matchId}_away_name`).innerText;
         const route = koRouting[matchId];
-        if (!route || route.landmark) return;
+        if (!route) return;
         let winner = 'TBD';
         if (hVal !== "" && aVal !== "" && hName !== 'TBD' && aName !== 'TBD') {
             if (+hVal > +aVal) winner = hName; else if (+aVal > +hVal) winner = aName;
