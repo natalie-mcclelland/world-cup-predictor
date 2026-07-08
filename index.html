@@ -193,17 +193,16 @@
 
     const groupMatches = [];
     
-    // UPDATED: Standard paths from R32 are bypassed because R16 is manually overridden with official selections.
-    // Paths from Round of 16 -> Quarter Finals are mapped cleanly here:
+    // Paths from Quarter Finals -> Semi Finals are mapped cleanly here:
     const koRouting = { 
-        'R16_1': { next: 'QF_1', slot: 'home' }, // M89 Winner -> QF1 Home
-        'R16_2': { next: 'QF_1', slot: 'away' }, // M90 Winner -> QF1 Away
-        'R16_3': { next: 'QF_2', slot: 'home' }, // M91 Winner -> QF2 Home
-        'R16_4': { next: 'QF_2', slot: 'away' }, // M92 Winner -> QF2 Away
-        'R16_5': { next: 'QF_3', slot: 'home' }, // M93 Winner -> QF3 Home
-        'R16_6': { next: 'QF_3', slot: 'away' }, // M94 Winner -> QF3 Away
-        'R16_7': { next: 'QF_4', slot: 'home' }, // M95 Winner -> QF4 Home
-        'R16_8': { next: 'QF_4', slot: 'away' }, // M96 Winner -> QF4 Away
+        'R16_1': { next: 'QF_1', slot: 'home' }, 
+        'R16_2': { next: 'QF_1', slot: 'away' }, 
+        'R16_3': { next: 'QF_2', slot: 'home' }, 
+        'R16_4': { next: 'QF_2', slot: 'away' }, 
+        'R16_5': { next: 'QF_3', slot: 'home' }, 
+        'R16_6': { next: 'QF_3', slot: 'away' }, 
+        'R16_7': { next: 'QF_4', slot: 'home' }, 
+        'R16_8': { next: 'QF_4', slot: 'away' }, 
         
         'QF_1': { next: 'SF_1', slot: 'home' }, 
         'QF_2': { next: 'SF_1', slot: 'away' }, 
@@ -232,7 +231,7 @@
         initKnockoutUI(); 
         loadSavedOfficialScores(); 
         updateGroupStandings(); 
-        updateKnockoutBracket(); // Explicitly populate verified teams on load
+        updateKnockoutBracket(); 
         recalculateLeaderboard();
     });
 
@@ -284,42 +283,46 @@
             standings[group].sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
             document.getElementById(`table_body_${group}`).innerHTML = standings[group].map((t, idx) => `<tr style="${idx < 2 ? 'background:rgba(34,197,94,0.1);' : idx===2 ? 'background:rgba(56,189,248,0.05);' : ''}"><td class="team-name">${t.name}</td><td>${t.p}</td><td>${t.gd > 0 ? '+'+t.gd : t.gd}</td><td><strong>${t.pts}</strong></td></tr>`).join('');
         }
-        
-        // Push the official fixtures out to the UI elements
         updateKnockoutBracket();
     }
 
     function updateKnockoutBracket() {
-        // Real-world confirmed Round of 32 Match Assignments 
         const r32Mapping = {
-            'R32_1':  { home: 'South Africa',        away: 'Canada' },                 // M73
-            'R32_2':  { home: 'Germany',             away: 'Paraguay' },               // M74
-            'R32_3':  { home: 'Netherlands',         away: 'Morocco' },                // M75
-            'R32_4':  { home: 'Brazil',              away: 'Japan' },                  // M76
-            'R32_5':  { home: 'France',              away: 'Sweden' },                 // M77
-            'R32_6':  { home: "Côte d'Ivoire",       away: 'Norway' },                 // M78
-            'R32_7':  { home: 'Mexico',              away: 'Ecuador' },                // M79
-            'R32_8':  { home: 'England',             away: 'DR Congo' },               // M80
-            'R32_9':  { home: 'United States',       away: 'Bosnia and Herzegovina' }, // M81
-            'R32_10': { home: 'Belgium',             away: 'Senegal' },                // M82
-            'R32_11': { home: 'Portugal',            away: 'Croatia' },                // M83
-            'R32_12': { home: 'Spain',               away: 'Austria' },                // M84
-            'R32_13': { home: 'Switzerland',         away: 'Algeria' },                // M85
-            'R32_14': { home: 'Argentina',           away: 'Cabo Verde' },             // M86
-            'R32_15': { home: 'Colombia',            away: 'Ghana' },                  // M87
-            'R32_16': { home: 'Australia',           away: 'Egypt' }                   // M88
+            'R32_1':  { home: 'South Africa',            away: 'Canada' },
+            'R32_2':  { home: 'Germany',                 away: 'Paraguay' },
+            'R32_3':  { home: 'Netherlands',             away: 'Morocco' },
+            'R32_4':  { home: 'Brazil',                  away: 'Japan' },
+            'R32_5':  { home: 'France',                  away: 'Sweden' },
+            'R32_6':  { home: "Côte d'Ivoire",       away: 'Norway' },
+            'R32_7':  { home: 'Mexico',                  away: 'Ecuador' },
+            'R32_8':  { home: 'England',                 away: 'DR Congo' },
+            'R32_9':  { home: 'United States',           away: 'Bosnia and Herzegovina' },
+            'R32_10': { home: 'Belgium',                 away: 'Senegal' },
+            'R32_11': { home: 'Portugal',                away: 'Croatia' },
+            'R32_12': { home: 'Spain',                   away: 'Austria' },
+            'R32_13': { home: 'Switzerland',             away: 'Algeria' },
+            'R32_14': { home: 'Argentina',               away: 'Cabo Verde' },
+            'R32_15': { home: 'Colombia',                away: 'Ghana' },
+            'R32_16': { home: 'Australia',               away: 'Egypt' }
         };
 
-        // NEW: Real-world confirmed Round of 16 Match Assignments (Overriding standard routes)
         const r16Mapping = {
-            'R16_1':  { home: 'Paraguay',            away: 'France' },                 // M89
-            'R16_2':  { home: 'Canada',              away: 'Morocco' },                // M90
-            'R16_3':  { home: 'Brazil',              away: 'Norway' },                 // M91
-            'R16_4':  { home: 'Mexico',              away: 'England' },                // M92
-            'R16_5':  { home: 'Portugal',            away: 'Spain' },                  // M93
-            'R16_6':  { home: 'United States',       away: 'Belgium' },                // M94
-            'R16_7':  { home: 'Argentina',           away: 'Egypt' },                  // M95
-            'R16_8':  { home: 'Switzerland',         away: 'Colombia' }                // M96
+            'R16_1':  { home: 'Paraguay',             away: 'France' },
+            'R16_2':  { home: 'Canada',               away: 'Morocco' },
+            'R16_3':  { home: 'Brazil',               away: 'Norway' },
+            'R16_4':  { home: 'Mexico',               away: 'England' },
+            'R16_5':  { home: 'Portugal',             away: 'Spain' },
+            'R16_6':  { home: 'United States',        away: 'Belgium' },
+            'R16_7':  { home: 'Argentina',            away: 'Egypt' },
+            'R16_8':  { home: 'Switzerland',          away: 'Colombia' }
+        };
+
+        // NEW MAP OVERRIDE: Hardcoded official selections for the 4 Quarter-Finals
+        const qfMapping = {
+            'QF_1':   { home: 'France',               away: 'Morocco' },
+            'QF_2':   { home: 'Spain',                away: 'Belgium' },
+            'QF_3':   { home: 'Norway',               away: 'England' },
+            'QF_4':   { home: 'Argentina',            away: 'Switzerland' }
         };
 
         // Populate Round of 32
@@ -330,12 +333,20 @@
             if (awayElem) awayElem.innerText = r32Mapping[matchId].away;
         }
 
-        // Populate Round of 16 & trigger cascading updates for following rounds
+        // Populate Round of 16
         for (const matchId in r16Mapping) {
             const homeElem = document.getElementById(`${matchId}_home_name`);
             const awayElem = document.getElementById(`${matchId}_away_name`);
             if (homeElem) homeElem.innerText = r16Mapping[matchId].home;
             if (awayElem) awayElem.innerText = r16Mapping[matchId].away;
+        }
+
+        // Populate Quarter-Finals & trigger updates into the Semi-Final boxes
+        for (const matchId in qfMapping) {
+            const homeElem = document.getElementById(`${matchId}_home_name`);
+            const awayElem = document.getElementById(`${matchId}_away_name`);
+            if (homeElem) homeElem.innerText = qfMapping[matchId].home;
+            if (awayElem) awayElem.innerText = qfMapping[matchId].away;
 
             evaluateKoWinner(matchId);
         }
